@@ -1,0 +1,54 @@
+---
+- name: Create SSL certificate
+  hosts: tensor
+  become: yes
+  become_method: sudo
+  gather_facts: true
+  tags: [ssl]
+  tasks:
+    - name: Update repository
+      yum:
+        update_cache: yes
+
+    - name: Install openssl
+      yum:
+         name: openssl
+         state: latest	 		
+
+    - name: Create a folder for csr
+      file:
+        path: /etc/ssl/csr
+        state: directory
+        mode: 0755 
+
+    - name: Create a folder for key
+      file:
+        path: /etc/ssl/private
+        state: directory
+        mode: 0755
+
+    - name: Create a folder for certs
+      file:
+        path: /etc/ssl/certs
+        state: directory
+        mode: 0755
+
+    - name: Generate an OpenSSL private key
+      openssl_privatekey:
+        path: /etc/ssl/private/localhost.pem
+
+    - name: Generate CSR
+      openssl_csr:
+        path: /etc/ssl/csr/req.csr
+        privatekey_path: /etc/ssl/private/localhost.pem
+        country_name: RU
+        organization_name: Ansible
+        email_address: ansible@localhost
+        common_name: localhost
+
+    - name: Generate a self-signed certificate
+      openssl_certificate:
+        path: /etc/ssl/certs/nginx-selfsigned.crt
+        privatekey_path: /etc/ssl/private/localhost.pem
+        csr_path: /etc/ssl/csr/req.csr
+        provider: selfsigned
