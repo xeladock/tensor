@@ -1,1 +1,1 @@
-# Tensor devops lesson #1
+# Tensor devops lessons
